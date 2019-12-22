@@ -17,17 +17,21 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
   keys.KEYFILE, scope)
 
 # Authorization and preparation: Spreadsheet
-gc = gspread.authorize(credentials)
+gspread_client = gspread.authorize(credentials)
 
 cell_pos = input('Enter cell position (for example, B3):\n')
 content = input('\nEnter new cell content:\n')
 
 if input('\nTest or real? (t/r)') == 'r':
-  print('\nWriting to spreadsheet ...')
-  worksheet = gc.open(keys.REAL_SHEET).sheet1
+  sheetname = keys.REAL_SHEET
 else:
-  print('\nWriting to spreadsheet ...')
-  worksheet = gc.open(keys.TEST_SHEET).sheet1
+  sheetname = keys.TEST_SHEET
+
+# Get the newest sheet, also to be able to get the correct year
+worksheet = sorted(gspread_client.open(sheetname).worksheets(), key=lambda s: s.title)[-1]
+# print(latest_sheet)
+
+print('\nWriting to spreadsheet ...')
 
 worksheet.update_acell(cell_pos, content)
 print('\n{} updated with\n"{}"\nin spreadsheet\n"{}".'.format(cell_pos, content, worksheet.spreadsheet.title))
